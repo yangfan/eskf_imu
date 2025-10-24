@@ -1,0 +1,6 @@
+logs/
+**build**
+bin/
+lib/
+data/output/
+.cache/
