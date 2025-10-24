@@ -3,4 +3,5 @@ logs/
 bin/
 lib/
 data/output/
+data/input/
 .cache/
