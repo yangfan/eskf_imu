@@ -22,8 +22,8 @@
 
 ## IMU Integration
   - Problem Statement:
-    - Given IMU data: timestamp, gyroscope (angular velocity wx, wy, wz), accelerator (ax, ay, az)
-    - Compute the state at each timestep position p, velocity v, rotation q, gyroscope bias b_g, accelerator bias b_a, gravity g 
+    - Given IMU data: timestamp, gyroscope (angular velocity wx, wy, wz), accelerometer (ax, ay, az)
+    - Compute the state at each timestep position p, velocity v, rotation q, gyroscope bias b_g, accelerometer bias b_a, gravity g 
 
   - Solution: simply integrate IMU data though the state will diverge pretty soon
 
@@ -49,7 +49,7 @@
     - GNSS, UTM data class
     - Processor class: read, process and write data 
     - Main function: define data processing flow
-    - IMU initializer: estimate initial mean accelerator and gyroscope bias, and covariance
+    - IMU initializer: estimate initial mean accelerometer and gyroscope bias, and covariance
     - ESKF: prediction with imu data, correction with odom and gnss data, reset error state and update covariance of the state
       - GNSS data observe and correct position and orientation (only when heading angle is available)
       - Odom data observe and correct the veloicty 

@@ -2,12 +2,11 @@
 #include <Eigen/Core>
 #include <sophus/se3.hpp>
 
+#include "gnss.h"
 #include "imu.h"
 #include "initializer.h"
 #include "math.hpp"
 #include "odom.h"
-
-#include <sophus/se3.hpp>
 
 class ESKF {
 public:
@@ -30,9 +29,12 @@ public:
 
   void initialize_noise(const Initializer &initializer);
   void initialize_pose(const Sophus::SE3d &Tob, const double gnss_timestamp);
+  void initialize_pose(const GNSS &gnss_data);
 
   bool predict_imu(const IMU &imu_data);
   bool correct_gnss(const Sophus::SE3d &Tob, const double gnss_timestamp);
+  bool correct_gnss(const GNSS &gnss_data);
+
   bool correct_odom(const Odom &odom_data);
   bool correct_state();
   bool reset_error();

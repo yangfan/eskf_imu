@@ -8,8 +8,8 @@
 #include "odom.h"
 #include "processor.h"
 
-DEFINE_string(data_path, "./data/sensor_data.txt", "Data file path");
-DEFINE_string(output_path, "./data/eskf.txt", "Output file path");
+DEFINE_string(data_path, "./data/input/sensor_data.txt", "Data file path");
+DEFINE_string(output_path, "./data/output/eskf.txt", "Output file path");
 DEFINE_double(antenna_x, -0.17, "Antenna pos x to IMU");
 DEFINE_double(antenna_y, -0.20, "Antenna pos y to IMU");
 DEFINE_double(antenna_angle, 12.06, "Antenna angle (deg) to IMU"); // deg
@@ -64,23 +64,18 @@ int main(int argc, char **argv) {
     }
   };
 
+  GNSS::set_config(FLAGS_antenna_x, FLAGS_antenna_y, FLAGS_antenna_angle);
   auto gnss_processor = [&](GNSS &gnss_data) {
     if (!eskf.noise_initialized() || !gnss_data.convert_utm()) {
+      // !gnss_data.valid_heading()) {
       return;
     }
-    Sophus::SE3d Tob = gnss_data.body_pose(FLAGS_antenna_x, FLAGS_antenna_y,
-                                           FLAGS_antenna_angle, eskf.origin());
-    if (!eskf.pose_initialized() && gnss_data.valid_heading()) {
-      eskf.set_origin(Sophus::SE3d(Sophus::SO3d(), Tob.translation()));
-      Tob.translation() = Eigen::Vector3d::Zero();
-      eskf.initialize_pose(Tob, gnss_data.timestamp());
-    }
     if (eskf.noise_initialized() && eskf.pose_initialized()) {
-      if (!gnss_data.valid_heading()) {
-        Tob.so3() = eskf.state().rot; // keep rotation state unchanged
-      }
-      eskf.correct_gnss(Tob, gnss_data.timestamp());
+      eskf.correct_gnss(gnss_data);
       save_state();
+    }
+    if (!eskf.pose_initialized() && gnss_data.valid_heading()) {
+      eskf.initialize_pose(gnss_data);
     }
   };
   processor.setIMUProcessor(imu_processor);

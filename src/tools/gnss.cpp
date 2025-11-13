@@ -17,7 +17,7 @@ bool GNSS::convert_utm() {
 
 Sophus::SE3d GNSS::body_pose(const double antenna_x, const double antenna_y,
                              const double antenna_theta,
-                             const Sophus::SE3d &origin) {
+                             const Sophus::SE3d &origin) const {
   double z_angle = 0;
   if (heading_valid_) {
     z_angle =
@@ -32,4 +32,8 @@ Sophus::SE3d GNSS::body_pose(const double antenna_x, const double antenna_y,
   Sophus::SE3d Tob = origin.inverse() * Twb;
 
   return Tob;
+}
+
+Sophus::SE3d GNSS::body_pose(const Sophus::SE3d &origin) const {
+  return body_pose(antenna_x_, antenna_y_, antenna_theta_, origin);
 }

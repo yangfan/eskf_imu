@@ -9,6 +9,7 @@ void ESKF::initialize_noise(const Initializer &initializer) {
   cov_ = Eigen::Matrix<double, 18, 18>::Identity() * 1e-4;
   set_init_noise_ = true;
   update_time(initializer.timestamp());
+  LOG(INFO) << "Noise initialized.";
 }
 void ESKF::initialize_pose(const Sophus::SE3d &Tob,
                            const double gnss_timestamp) {
@@ -16,7 +17,19 @@ void ESKF::initialize_pose(const Sophus::SE3d &Tob,
   nominal_state_.rot = Tob.so3();
   set_init_pose_ = true;
   update_time(gnss_timestamp);
+  LOG(INFO) << "Pose initialized.";
 }
+
+void ESKF::initialize_pose(const GNSS &gnss_data) {
+  origin_ = gnss_data.body_pose(Sophus::SE3d());
+  nominal_state_.pos.setZero();
+  nominal_state_.rot = origin_.so3();
+  origin_.so3() = Sophus::SO3d();
+  set_init_pose_ = true;
+  update_time(gnss_data.timestamp());
+  LOG(INFO) << "Pose initialized.";
+}
+
 bool ESKF::update_time(const double time) {
   if (timestamp_ >= time) {
     LOG(INFO) << "time " << time << " is older than current: " << timestamp_;
@@ -59,7 +72,7 @@ bool ESKF::predict_imu(const IMU &imu_data) {
   F.block<3, 3>(3, 12) = -nominal_state_.rot.matrix() * dt;
   F.block<3, 3>(3, 15) = Eigen::Matrix3d::Identity() * dt;
   F.block<3, 3>(6, 6) =
-      Sophus::SO3d::exp(-(imu_data.acc - nominal_state_.bias_g) * dt).matrix();
+      Sophus::SO3d::exp(-(imu_data.gyr - nominal_state_.bias_g) * dt).matrix();
   F.block<3, 3>(6, 9) = -Eigen::Matrix3d::Identity() * dt;
 
   // error state unchanged
@@ -77,10 +90,19 @@ bool ESKF::predict_imu(const IMU &imu_data) {
   //     noise_.var_ba_, 0, 0, 0;
 
   cov_ = F * cov_.eval() * F.transpose() + Q;
-  nominal_state_ = predicted_state;
+  nominal_state_.rot = predicted_state.rot;
+  nominal_state_.pos = predicted_state.pos;
+  nominal_state_.vel = predicted_state.vel;
   update_time(imu_data.timestamp);
 
   return true;
+}
+bool ESKF::correct_gnss(const GNSS &gnss_data) {
+  Sophus::SE3d Tob = gnss_data.body_pose(origin_);
+  if (!gnss_data.valid_heading()) {
+    Tob.so3() = state().rot;
+  }
+  return correct_gnss(Tob, gnss_data.timestamp());
 }
 bool ESKF::correct_gnss(const Sophus::SE3d &Tob, const double gnss_timestamp) {
   if (gnss_timestamp <= timestamp_) {
