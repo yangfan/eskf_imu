@@ -60,30 +60,31 @@
     - antenna pose: x, y, theta 
     - sensor fusion options
   - ESKF results:
-    - [shape_data.txt](data/shape_data.txt)
+    - One of the benefit of sensor fusion with gnss, imu, odom data is the robustness which enables the system to work in different environment. For example imu sensor data helps to estimate the system state in GPS-denied environment. With the help of accelerometer and gyroscope data, the motion can be estimated in GPS-denied environment. Meanwhile GPS and odom data helps to reduced the accumulated error of IMU integration. The figure below shows the GPS-denied region (scatter plot):
+    ![gps-denied](data/pic/gps_denied.png)
+    - Those gap is filled with imu and odom data by sensor fusion.
+
+      ![ESKF result](data/pic/sensor_gnss_odom2d.png "2d")
+
+      ![ESKF result](data/pic/sensor_gnss_odom3d.png "3d")
+    - However IMU data alone is not enough to estimate the whole trajectory due to the accumulated error in IMU integration.
+
+      ![2d plot](data/pic/sensor_imu_only2d.png)
+
+      ![3d plot](data/pic/sensor_imu_only3d.png)
+    - Results of another data set:
 
       ![2d plot](data/pic/shape_gnss_odom2d.png "2d")
 
       ![3d plot](data/pic/shape_gnss_odom3d.png "3d")
 
-    - [sensor_data.txt](data/sensor_data.txt)
-
-      ![ESKF result](data/pic/sensor_gnss_odom2d.png "2d")
-
-      ![ESKF result](data/pic/sensor_gnss_odom3d.png "3d")
   - IMU integration results (for comparison):
-    - The state estimations diverge significantly.
-    - [shape_data.txt](data/shape_data.txt)
+    - The state estimations diverge significantly due the accumulated error.
 
       ![2d plot](data/pic/shape_imu_only2d.png)
 
       ![3d plot](data/pic/shape_imu_only3d.png)
 
-    - [sensor_data.txt](data/sensor_data.txt)
-
-      ![2d plot](data/pic/sensor_imu_only2d.png)
-
-      ![3d plot](data/pic/sensor_imu_only3d.png)
 
 ### Dependencies
 - [Eigen](https://gitlab.com/libeigen/eigen)
