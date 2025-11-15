@@ -1,7 +1,6 @@
 #include <fstream>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <string>
 
 #include "imu.h"
 #include "processor.h"
@@ -10,7 +9,7 @@ DEFINE_string(data_path, "./data/sensor_data.txt", "Data file path");
 DEFINE_string(output_path, "./data/imu_integration.txt", "Output file path");
 
 int main(int argc, char **argv) {
-  FLAGS_log_dir = std::string("./logs");
+  // FLAGS_log_dir = std::string("./logs");
   FLAGS_stderrthreshold = google::INFO;
   FLAGS_colorlogtostderr = true;
 
